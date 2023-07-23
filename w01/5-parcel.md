@@ -1,9 +1,7 @@
 # Bundler
 
-## Q
+## Q1. 왜 번들링 하는가
 
- 1. Bundler 란.
- 2. JavaScript Module System
- 3. SWC
- 4. servor
- 5. Parcel 이 이미지에 접근하는 방식.
+## Q2. 자바스크립트 모듈 시스템에 대해서
+
+## Q3. Parcel 이 이미지에 접근하는 방식
