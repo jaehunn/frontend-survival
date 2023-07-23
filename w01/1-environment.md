@@ -1,54 +1,39 @@
 # Environment
 
-## Q1. 패키지 의존성에 대해서
+## NPM (Node Package Manager)
 
-package.json 으로 프로젝트가 의존하는 패키지 목록을 관리할 수 있다.
+Node.js (JavaScript) 패키지를 관리하는 도구.
 
-협업하는 개발자에게 이 프로젝트가 어떤 패키지를 사용하는지, 어떤 버전을 사용하는지 공유할 수 있다.
+* 프로젝트에 사용될 패키지 목록은 package.json 파일로 관리된다.
+* dependencies 는 어플리케이션에서 구동되어야하는 패키지
+* devDependencies 는 빌드 이전에서만 구동되는 패키지
+* peerDependencies 는 내 프로젝트에서 사용하는 패키지 버전을 외부 프로젝트가 내 프로젝트를 사용할 때 호환시키기 위해 패키지 버전을 알려주기위한 용도로 사용한다.
+  * `--save-dev` 옵션을 줘서 설치한다. (`-D` 옵션과 동일)
+* `npm install` 시, package-lock.json 이 생성된다.
+  * package-lock.json 은 의존성 트리를 나타내며, 협업자들에게 공유되어야한다. (Git)
+  * `npm i` 했을 때, package.json 의 [시멘틱 버저닝](https://docs.npmjs.com/cli/v6/using-npm/semver)을 보고 package-lock.json 이 달라지기도 하는데, 이 때는 package-lock.json 에 명시된대로 설치하는 `npm ci` 명령어를 사용하면 된다.
+* node_modules 는 의존성 패키지 중복이 발생한다.
+  * NPM 에서는 Hoisting 으로 중복되는 패키지를 한 곳으로 끌어올린다.
+  * 개발자가 설치하지않아서 사용할 수 없었던 패키지가 끌어올려지면서 갑자기 사용되어진다.
+  * 사용하다가 특정 패키지를 제거했을때 갑자기 사용할 수 없게되는 상황이 발생한다 (유령 의존성 패키지)
+  * 이런 문제를 해결하기 위해 Yarn Berry 는 PnP(Plug'n'Play) 를 사용한다. ([참고 자료](<https://toss.tech/article/node-modules-and-yarn-berry>))
 
-npm install 을 진행할 때, --save-dev 옵션을 지정할 수 있다.
+## JavaScript Module System
 
-개발 의존성 패키지로 명시하는 것이고, 개발 단계에서만 필요한 패키지를 뜻한다. package.json 파일의 devDependencies 속성에 나열된다.
-
-반대로 dependencies 속성에 나열되는 패키지들은 --save-dev 옵션을 붙히지않고 설치한 패키지를 의미한다. 프로덕션 환경에서 필요한 패키지로 어플리케이션이 구동되기 위한 패키지다.
-
-즉, 개발 의존성 패키지는 사용자가 어플리케이션을 사용하면서 필요하지않은 패키지고, 빌드시 패키지를 제외한다.
-
-peerDependencies 라는 것도 있다.
-
-peer 는 동료라는 의미를 가지는데. 이 프로젝트를 사용할 프로젝트에게 패키지의 버전을 알려주는 용도로 사용된다.
-
-예를 들어, react 17 를 사용하는 프로젝트(A) 를 외부 프로젝트들에게 공개한다고 하면, 외부 프로젝트(B) 에서는 호환성을 위해서 react 17 버전을 사용하도록 해야한다.
-
-* B > A > react 17
-
-## Q2. 의존성 트리
-
-package-lock.json 은 package.json 으로 정의된 패키지들을 설치하면 node_modules 디렉토리의 상태에 따라 자동 생성된다.
-
-package-lock.json 은 협업하는 개발자들에게 동일한 의존성 트리를 제공하도록 돕는다. 협업하는 개발자들에게 공유되어야하는 파일이다. (git)
-
-NPM 은 어떤 방식으로 의존성 트리에 명시된 패키지를 탐색할까.
-
-의존성 트리가 다음과 같이 구성되어있다고 해보자.
-
-* A 라는 패키지는 C 라는 패키지를 의존하고 있고, (A > C)
-* B 라는 패키지는 C 라는 패키지를 의존하고 있다. (B > C)
-
-C 는 공교롭게도 두 곳에서 관리되어 패키지가 중복된다.
-
-`npm dedup` 명령어는 의존성 트리를 flat 하게 만든다.
-
-```console
-// 만약 node_modules 에 있는 패키지들의 비중을 알고 싶으면 다음 명령어를 사용해보자.
-du -sh ./node_modules/* | sort -nr | grep '\dM.*'
-```
-
-간혹 `npm install` 을 하다보면, package-lock.json 이 업데이트되는 상황이 발생하는데. package.json 에 ^1.1.0 과 같은 시멘틱 버저닝을 사용하고 있기 때문이다. package-lock.json 에 명시된대로 install 을 수행하고 싶다면, `npm ci` 를 사용해보자.
+* 어플리케이션의 크기가 커지면, 파일을 여럭 개로 분리해야한다. 이 분리된 파일을 모듈이라고 부른다.
+* `<script type="module">` 은 브라우저가 이 스크립트가 모듈이라는 것을 인지하게 돕는다.
+* 모듈은 보통 여러개로 제공되어 한 데 묶는 번들러를 사용하게 된다.
+* 번들러는 Entry 모듈을 지정하고, 의존 관계에 따라 하나의 큰 파일을 만들어낸다.
+* tree-shaking 으로 쓰이지않는 모듈을 제거하기도하고, 최신 문법을 바벨을 통해 호환성을 위한 낮은 버전의 스크립트로 변환하기도 한다.
+* 번들링한 결과물은 type="module" 이 필요없어진다. import, export 를 사용하지않는 ES Module (>= ES6) 이 아닌 낮은 버전의 스크립트로 변환되기 때문이다.
 
 ---
 Reference
 
+* <https://docs.npmjs.com/cli/v6/using-npm/semver>
 * <https://yceffort.kr/2020/11/javascript-dependency-hell>
-* <https://toss.tech/article/node-modules-and-yarn-berry>
 * <https://velog.io/@johnyworld/Peer-Dependencies-%EC%97%90-%EB%8C%80%ED%95%98%EC%97%AC>
+* <https://toss.tech/article/node-modules-and-yarn-berry>
+* <https://ko.javascript.info/modules-intro>
+* <https://ko.javascript.info/modules-intro#ref-1022>
+* <https://www.youtube.com/watch?v=mee1QbvaO10>
